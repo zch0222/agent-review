@@ -1,0 +1,25 @@
+# /gate 项目规则（每个仓库一份）：~/.agent-review/profiles/<仓库目录名>.yml
+# 第一次在某个仓库运行 /gate 时从这个示例生成。请把 checks 改成项目真实的命令。
+
+fix_mode: apply                  # apply：审查目标是 HEAD 且工作区干净时，把修复写进工作区（不暂存、不提交）；report：只写交接单
+
+checks:                          # 验证步骤固定执行，原样记录输出；用不到的项留空字符串
+  fast: ["npm run lint", "npm run typecheck"]
+  build: "npm run build"
+  test_related: "npx jest --findRelatedTests {files}"   # {files} 会换成改动的文件
+  test_full: "npm test"
+
+tiers:                           # 规则定下限，只能升档
+  T3: ["**/auth/**", "**/payment*/**", "**/migrations/**", "scripts/deploy*", "**/*secret*"]
+  T2: ["src/core/**", "src/api/**", "package.json"]
+  T0_only_if_all_match: ["**/*.md", "docs/**"]
+  split_over_lines: 400
+
+failure_modes:                   # 这个项目里"出错"长什么样，审查员会重点看
+  - 金额计算用了浮点数
+  - 接口返回结构变化会让旧版本客户端崩溃
+
+do_not_report:                   # 驳回过、不想再看到的
+  - 日志文案的措辞
+
+skip_paths: ["**/generated/**", "**/*.lock"]
